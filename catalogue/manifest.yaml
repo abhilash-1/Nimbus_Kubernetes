@@ -46,9 +46,10 @@ spec:
       #serviceAccountName: service_account
       containers:
       - name: nimbus-catalogue-container
-        containerPort: 8080
         image: abhilashreddy13/nimbus-catalogue:1.0
         imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
 
         resources:
           requests:
@@ -79,6 +80,13 @@ spec:
 
 apiVersion: v1
 kind: Service
+metadata:
+  name: catalogue-service 
+  namespace: roboshop
+  labels:
+    Project: Roboshop
+    Component: Catalogue
+    application: backend
 spec:
   selector:
     Project: Roboshop
