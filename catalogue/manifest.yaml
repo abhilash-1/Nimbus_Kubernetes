@@ -1,0 +1,90 @@
+apiVersion: v1 
+kind: ConfigMap
+metadata:
+  name: catalogue-config
+  namespace: roboshop
+  labels:
+    project: roboshop
+    component: catalogue
+    tier: backend
+data:
+  Mongo: "true"
+  MONGO_URL: "mongodb://mongodb:27017/catalogue"
+
+---
+#deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogue-deployment
+  namespace: roboshop
+  labels:
+    project: roboshop
+    component: catalogue
+    tier: backend
+#replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      project: roboshop
+      component: catalogue
+      tier: backend
+
+# pod definition
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        component: catalogue
+        tier: backend
+      #azure.workload.identity/use: "true"
+
+    spec:
+
+      #serviceAccountName: service_account
+      containers:
+      - name: nimbus-catalogue-container
+        containerPort: 8080
+        image: abhilashreddy13/nimbus-catalogue:1.0
+        imagePullPolicy: Always
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "100m"
+            memory: "150Mi"
+
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          failureThreshold: 2
+          periodSeconds: 10
+          initialDelaySeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /health
+          failureThreshold: 2
+          periodSeconds: 10
+        envFrom:
+        - configMapRef:
+            name: catalogue-config
+
+---
+#Service
+
+apiVersion: v1
+kind: Service
+spec:
+  selector:
+    Project: Roboshop
+    Component: Catalogue
+    application: backend
+  ports:
+  - protocol: HTTP
+    port: 8080
+    targetport: 8080 

@@ -1,0 +1,96 @@
+# MongoDB Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  namespace: roboshop
+  labels:
+    project: roboshop
+    tier: db
+    env: dev
+    purpose: ppa
+    application: mongodb
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      project: roboshop
+      tier: db
+      application: mongodb
+
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        tier: db
+        env: dev
+        purpose: ppa
+        application: mongodb
+
+    spec:
+      containers:
+        - name: nimbus-mongo
+          image: abhilashreddy13/mongo:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: mongodb
+              containerPort: 27017
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "120m"
+              memory: "200Mi"
+
+          startupProbe:
+            tcpSocket:
+              port: 27017
+            periodSeconds: 10
+            failureThreshold: 10
+
+          readinessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 2
+
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+
+---
+# MongoDB Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: roboshop
+  labels:
+    project: roboshop
+    tier: db
+    env: dev
+    purpose: ppa
+    application: mongodb
+
+spec:
+  type: ClusterIP
+
+  selector:
+    project: roboshop
+    tier: db
+    application: mongodb
+
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
