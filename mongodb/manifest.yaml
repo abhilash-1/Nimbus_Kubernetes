@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: nimbus-mongo
-          image: abhilashreddy13/mongo:latest
+          image: abhilashreddy13/mongo:1.0
           imagePullPolicy: Always
 
           ports:
